@@ -24,7 +24,7 @@ no "team" field).
   field.
 - **Team roster**: `~/Downloads/2026-2027 LSGBA Travel Roster.pdf`, a
   Google-Docs-rendered table, one column per team (e.g. "3 Gold", "4 Red", "8
-  Gold"), team's leading digit is the grade level. 9 teams, 75 athletes
+  Gold"), team's leading digit is the grade level. 9 teams, 76 athletes
   total this season. This file contains children's full names and must never
   be committed, matching the existing project's treatment of its own private
   roster source (`history.py`'s docstring).
