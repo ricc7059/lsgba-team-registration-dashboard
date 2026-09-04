@@ -18,6 +18,14 @@ def render_default(result=RESULT, stamp="Sep 3, 2026 6:00 PM"):
     return render.render_page(result, stamp)
 
 
+def panel(html, slug):
+    """The markup of one tab panel, from its id to the start of the next."""
+    start = html.index('id="panel-%s"' % slug)
+    following = html.find('<section class="tab-panel', start)
+    end = following if following != -1 else html.index("</main>")
+    return html[start:end]
+
+
 class ShellStructureTests(unittest.TestCase):
     """The left rail + tab-panel shell, copied structurally from the sibling
     dashboard -- these assertions exist so a future edit can't silently drop
@@ -85,16 +93,31 @@ class GradeAggregationTests(unittest.TestCase):
         self.assertIn("2 / 9", html)   # 4 Gold
         self.assertIn("1 / 4", html)   # 4 Red
 
-    def test_vchart_has_one_column_per_team_in_overview(self):
-        html = render_default()
-        overview_panel = re.search(r'id="panel-overview".*?</section>\s*</section>', html, re.S).group()
-        self.assertEqual(overview_panel.count('class="vcol"'), 3)
+    def test_overview_has_one_tile_per_grade_in_a_grid(self):
+        overview = panel(render_default(), "overview")
+        self.assertEqual(overview.count('class="card-grid"'), 1)
+        # RESULT has grades 3 and 4 -> two tiles.
+        self.assertEqual(overview.count('<section class="card">'), 2)
+
+    def test_each_tile_headlines_its_own_grade_tally(self):
+        overview = panel(render_default(), "overview")
+        self.assertIn('<h3>Grade 3 <span class="sub">2 / 8</span></h3>', overview)
+        self.assertIn('<h3>Grade 4 <span class="sub">3 / 13</span></h3>', overview)
+
+    def test_each_tile_charts_only_its_own_grades_teams(self):
+        overview = panel(render_default(), "overview")
+        grade3_tile = overview[overview.index("Grade 3"):overview.index("Grade 4")]
+        self.assertEqual(grade3_tile.count('class="vcol"'), 1)
+        self.assertNotIn("4 Red", grade3_tile)
+
+    def test_every_team_is_charted_exactly_once_on_overview(self):
+        overview = panel(render_default(), "overview")
+        self.assertEqual(overview.count('class="vcol"'), 3)
 
     def test_grade_panel_has_only_its_own_teams(self):
-        html = render_default()
-        grade4_panel = re.search(r'id="panel-grade-4".*?</section>\s*</section>', html, re.S).group()
-        self.assertEqual(grade4_panel.count('class="vcol"'), 2)
-        self.assertNotIn("3 Gold", grade4_panel)
+        grade4 = panel(render_default(), "grade-4")
+        self.assertEqual(grade4.count('class="vcol"'), 2)
+        self.assertNotIn("3 Gold", grade4)
 
 
 class UnmatchedNoteTests(unittest.TestCase):

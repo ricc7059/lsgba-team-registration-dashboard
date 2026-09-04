@@ -74,21 +74,41 @@ body{margin:0;background:var(--ground);color:var(--text);
 .card{background:var(--surface);border:1px solid var(--edge);border-radius:16px;
   padding:19px 22px;margin-top:16px}
 .card h3{margin:0 0 15px;font-size:.66rem;letter-spacing:.19em;
-  text-transform:uppercase;color:var(--dim);font-weight:700}
+  text-transform:uppercase;color:var(--dim);font-weight:700;
+  display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.card h3 .sub{font-family:var(--mono);font-size:.85rem;letter-spacing:0;
+  color:var(--gold);font-variant-numeric:tabular-nums}
 .card.wide{grid-column:1/-1}
+
+/* one tile per grade, as many across as the main column fits */
+.card-grid{display:grid;gap:16px;
+  grid-template-columns:repeat(auto-fit,minmax(268px,1fr))}
+.card-grid .card{margin-top:0}
 
 /* ---- vertical bars (copied from the sibling's _columns()/.vchart) ---- */
 .vchart{display:flex;align-items:flex-end;justify-content:center;
-  gap:clamp(6px,2.4vw,26px);padding-top:4px}
-.vcol{flex:1 1 0;max-width:110px;min-width:44px;display:flex;
-  flex-direction:column;align-items:center;gap:7px}
+  gap:clamp(8px,2vw,22px);padding-top:2px}
+.vcol{flex:1 1 0;max-width:84px;min-width:44px;display:flex;
+  flex-direction:column;align-items:center;gap:6px}
 .vnum{font-family:var(--mono);font-variant-numeric:tabular-nums;
-  font-size:.95rem;font-weight:700;color:var(--gold);line-height:1}
-.vtrack{width:100%;height:clamp(90px,16vw,150px);display:flex;
-  align-items:flex-end;border-bottom:1px solid var(--edge)}
-.vfill{width:100%;border-radius:6px 6px 0 0;min-height:3px;
+  font-size:.9rem;font-weight:700;color:var(--gold);line-height:1}
+/* Unlike the sibling's count chart -- where the track is a bare baseline
+   because a box would imply a target that doesn't exist -- these bars ARE
+   percent-of-roster, so the target is real and the track has to be visible:
+   without it no bar ever reaches the top and every column reads as a squat
+   block floating under its own number. This is the same track treatment the
+   sibling uses on its horizontal progress bars. */
+.vtrack{width:100%;height:clamp(72px,8vw,104px);display:flex;
+  align-items:flex-end;background:rgba(232,216,184,.07);
+  border-radius:7px;overflow:hidden}
+.vfill{width:100%;border-radius:7px 7px 0 0;min-height:3px;
   background:linear-gradient(180deg,var(--gold),var(--gold-dim))}
 .vlabel{font-size:.78rem;color:var(--text);white-space:nowrap}
+
+/* a focused grade tab is the same tile zoomed in, not stretched thin */
+.card.wide .vcol{max-width:130px}
+.card.wide .vtrack{height:clamp(120px,14vw,190px)}
+.card.wide .vnum{font-size:1.05rem}
 
 footer.credit{text-align:center;color:var(--dim);font-size:.75rem;padding:18px}
 
@@ -160,7 +180,20 @@ def _tab_button(name, count_text, slug, active):
                        "true" if active else "false", escape(name), escape(count_text)))
 
 
-def _overview_panel(slug, active, total, roster_total, pct, team_bars):
+def _grade_tile(grade, teams, wide=False):
+    """One tile per grade: the grade's own registered/rostered tally in the
+    header, and a bar per team inside it."""
+    registered = sum(r for _, r, _ in teams)
+    size = sum(s for _, _, s in teams)
+    return (
+        '<section class="card%s">'
+        '<h3>Grade %s <span class="sub">%d / %d</span></h3>'
+        '%s'
+        '</section>' % (" wide" if wide else "", escape(grade), registered, size,
+                        _vchart(teams)))
+
+
+def _overview_panel(slug, active, total, roster_total, pct, tiles):
     return (
         '<section class="tab-panel%s" id="panel-%s">'
         '<h1>Overview</h1>'
@@ -168,16 +201,17 @@ def _overview_panel(slug, active, total, roster_total, pct, team_bars):
         '<p class="board-label">Registered / Rostered</p>'
         '<p class="board-value">%d / %d<span class="pct">%d%%</span></p>'
         '</div>'
-        '<section class="card wide"><h3>All teams</h3>%s</section>'
-        '</section>' % (" is-active" if active else "", slug, total, roster_total, pct, team_bars))
+        '<div class="card-grid">%s</div>'
+        '</section>' % (" is-active" if active else "", slug, total, roster_total, pct, tiles))
 
 
-def _grade_panel(grade, slug, active, team_bars):
+def _grade_panel(grade, slug, active, teams):
     return (
         '<section class="tab-panel%s" id="panel-%s">'
         '<h1>Grade %s</h1>'
-        '<section class="card wide"><h3>Registered by team</h3>%s</section>'
-        '</section>' % (" is-active" if active else "", slug, escape(grade), team_bars))
+        '%s'
+        '</section>' % (" is-active" if active else "", slug, escape(grade),
+                        _grade_tile(grade, teams, wide=True)))
 
 
 def render_page(result, updated_stamp):
@@ -194,9 +228,6 @@ def render_page(result, updated_stamp):
     for grade in grades:
         by_grade[grade].sort()
 
-    all_teams_sorted = sorted(
-        ((label, t["registered"], t["size"]) for label, t in teams.items()))
-
     slugs = ["overview"] + ["grade-%s" % grade for grade in grades]
     names = ["Overview"] + ["Grade %s" % grade for grade in grades]
     count_texts = ["%d / %d" % (total, roster_total)] + [
@@ -208,10 +239,11 @@ def render_page(result, updated_stamp):
         _tab_button(names[i], count_texts[i], slugs[i], i == 0)
         for i in range(len(slugs)))
 
-    panels = _overview_panel("overview", True, total, roster_total, pct,
-                             _vchart(all_teams_sorted))
+    tiles = "".join(_grade_tile(grade, by_grade[grade]) for grade in grades)
+
+    panels = _overview_panel("overview", True, total, roster_total, pct, tiles)
     panels += "".join(
-        _grade_panel(grade, slugs[i + 1], False, _vchart(by_grade[grade]))
+        _grade_panel(grade, slugs[i + 1], False, by_grade[grade])
         for i, grade in enumerate(grades))
 
     unmatched_html = ""
