@@ -6,138 +6,132 @@
 <title>LSGBA Team Registration</title>
 <link rel="icon" href="assets/favicon.png">
 <style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; background: #16171A; color: #ECEDEF;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-  header {
-    padding: 32px 24px; text-align: center;
-    background: linear-gradient(135deg, #8B1D41, #5E1230);
-  }
-  header img { height: 64px; margin-bottom: 12px; }
-  header h1 { margin: 0; font-size: 1.4rem; font-weight: 600; color: #ECEDEF; }
-  .headline-label {
-    margin-top: 18px; font-size: 0.72rem; text-transform: uppercase;
-    letter-spacing: 0.19em; color: rgba(232, 216, 184, 0.75);
-  }
-  .headline {
-    font-size: 2.6rem; font-weight: 700; margin: 4px 0 0; color: #D2B77C;
-    font-variant-numeric: tabular-nums;
-  }
-  .headline .pct { font-size: 1.1rem; color: rgba(232, 216, 184, 0.75); margin-left: 8px; }
-  main { max-width: 900px; margin: 0 auto; padding: 24px; }
-  .grade-block { margin-bottom: 28px; }
-  .grade-block h2 {
-    font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.19em;
-    color: #8E959F; border-bottom: 1px solid #31363E; padding-bottom: 6px;
-  }
-  .team { background: #1F2126; border: 1px solid #31363E; border-radius: 16px;
-          padding: 14px 16px; margin-top: 10px; }
-  .team-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-  .team-label { font-weight: 600; color: #ECEDEF; }
-  .team-count { color: #D2B77C; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .bar { height: 8px; border-radius: 4px; background: rgba(232, 216, 184, 0.07); overflow: hidden; }
-  .bar-fill { height: 100%; background: linear-gradient(90deg, #8A7647, #D2B77C); }
-  .unmatched { margin-top: 8px; padding: 14px 16px; border-radius: 16px;
-               background: #1F2126; border: 1px solid #31363E; color: #8E959F; }
-  footer { text-align: center; color: #8E959F; font-size: 0.85rem; padding: 24px; }
+:root{
+  --maroon:#8B1D41; --maroon-deep:#5E1230;
+  --gold:#D2B77C; --gold-dim:#8A7647;
+  --ground:#16171A; --surface:#1F2126; --surface-2:#262A30; --edge:#31363E;
+  --text:#ECEDEF; --dim:#8E959F;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body{margin:0;background:var(--ground);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+
+.shell{display:flex;min-height:100vh;align-items:stretch}
+
+/* ---- left rail (copied structurally from the sibling dashboard) ---- */
+.rail{flex:0 0 268px;background:var(--surface);border-right:1px solid var(--edge);
+  padding:26px 20px;display:flex;flex-direction:column;gap:26px}
+.brand{display:flex;align-items:center;gap:13px}
+.brand img{width:54px;height:54px;flex:0 0 54px}
+.brand-org{margin:0;font-size:.95rem;font-weight:800;letter-spacing:.02em;
+  line-height:1.15}
+.brand-sub{margin:2px 0 0;font-size:.72rem;color:var(--dim);letter-spacing:.13em;
+  text-transform:uppercase}
+.rail-label{margin:0 0 10px;font-size:.66rem;letter-spacing:.19em;
+  text-transform:uppercase;color:var(--dim);font-weight:700}
+.tabs{display:flex;flex-direction:column;gap:6px}
+.tab-button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:transparent;border:1px solid transparent;border-radius:11px;
+  padding:11px 13px;color:var(--dim);font-family:inherit;font-size:.83rem;
+  font-weight:600;cursor:pointer;transition:background .15s,color .15s}
+.tab-button:hover{background:var(--surface-2);color:var(--text)}
+.tab-button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.tab-button.is-active{background:var(--maroon);border-color:rgba(210,183,124,.5);
+  color:#fff}
+.tab-name{flex:1;line-height:1.3}
+.tab-count{font-size:.9rem;font-weight:700;color:var(--gold);
+  font-variant-numeric:tabular-nums}
+.rail-foot{margin-top:auto}
+.stamp{margin:0;font-size:.78rem;color:var(--text)}
+.unmatched-note{margin:8px 0 0;font-size:.72rem;color:var(--dim)}
+
+/* ---- main / tab panels ---- */
+.main{flex:1;min-width:0;padding:30px 34px 56px}
+.tab-panel{display:none}
+.tab-panel.is-active{display:block}
+.main h1{margin:0 0 18px;font-size:1.3rem;font-weight:700}
+
+/* ---- scoreboard cell (Overview tab) ---- */
+.board-cell{background:linear-gradient(135deg,var(--maroon),var(--maroon-deep));
+  border:1px solid rgba(210,183,124,.28);border-radius:16px;
+  padding:22px 26px;margin-bottom:16px}
+.board-label{margin:0;font-size:.7rem;letter-spacing:.19em;text-transform:uppercase;
+  color:rgba(232,216,184,.75)}
+.board-value{margin:6px 0 0;font-size:2.6rem;font-weight:700;color:var(--gold);
+  font-variant-numeric:tabular-nums;font-family:var(--mono)}
+.board-value .pct{font-size:1.1rem;color:rgba(232,216,184,.75);margin-left:10px}
+
+/* ---- card ---- */
+.card{background:var(--surface);border:1px solid var(--edge);border-radius:16px;
+  padding:19px 22px;margin-top:16px}
+.card h3{margin:0 0 15px;font-size:.66rem;letter-spacing:.19em;
+  text-transform:uppercase;color:var(--dim);font-weight:700}
+.card.wide{grid-column:1/-1}
+
+/* ---- vertical bars (copied from the sibling's _columns()/.vchart) ---- */
+.vchart{display:flex;align-items:flex-end;justify-content:center;
+  gap:clamp(6px,2.4vw,26px);padding-top:4px}
+.vcol{flex:1 1 0;max-width:110px;min-width:44px;display:flex;
+  flex-direction:column;align-items:center;gap:7px}
+.vnum{font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-size:.95rem;font-weight:700;color:var(--gold);line-height:1}
+.vtrack{width:100%;height:clamp(90px,16vw,150px);display:flex;
+  align-items:flex-end;border-bottom:1px solid var(--edge)}
+.vfill{width:100%;border-radius:6px 6px 0 0;min-height:3px;
+  background:linear-gradient(180deg,var(--gold),var(--gold-dim))}
+.vlabel{font-size:.78rem;color:var(--text);white-space:nowrap}
+
+footer.credit{text-align:center;color:var(--dim);font-size:.75rem;padding:18px}
+
+@media (max-width:860px){
+  .shell{flex-direction:column}
+  .rail{flex:0 0 auto;border-right:0;border-bottom:1px solid var(--edge);
+    padding:18px 16px;gap:16px}
+  .rail-foot{margin-top:0}
+  .tabs{flex-direction:row;flex-wrap:wrap;gap:8px}
+  .tab-button{flex:1 1 auto;border-radius:999px;padding:9px 15px}
+  .tab-name{flex:1 1 auto}
+  .main{padding:20px 16px 44px}
+}
 </style>
 </head>
 <body>
-<header>
-  <img src="assets/lsgba-badge-solid.png" alt="LSGBA">
-  <h1>2026-2027 Travel Roster Registration</h1>
-  <div class="headline-label">Registered / Rostered</div>
-  <div class="headline">32 / 76<span class="pct">42%</span></div>
-</header>
-<main>
-
-    <section class="grade-block">
-      <h2>Grade 3</h2>
+<div class="shell">
+  <aside class="rail">
+    <div class="brand">
+      <img src="assets/lsgba-badge-solid.png" alt="LSGBA">
+      <div>
+        <p class="brand-org">LSGBA</p>
+        <p class="brand-sub">Team Registration</p>
+      </div>
+    </div>
+    <div>
+      <p class="rail-label">Grades</p>
+      <nav class="tabs" role="tablist"><button class="tab-button is-active" data-slug="overview" role="tab" aria-selected="true"><span class="tab-name">Overview</span><span class="tab-count">32 / 76</span></button><button class="tab-button" data-slug="grade-3" role="tab" aria-selected="false"><span class="tab-name">Grade 3</span><span class="tab-count">5 / 8</span></button><button class="tab-button" data-slug="grade-4" role="tab" aria-selected="false"><span class="tab-name">Grade 4</span><span class="tab-count">11 / 18</span></button><button class="tab-button" data-slug="grade-5" role="tab" aria-selected="false"><span class="tab-name">Grade 5</span><span class="tab-count">3 / 16</span></button><button class="tab-button" data-slug="grade-6" role="tab" aria-selected="false"><span class="tab-name">Grade 6</span><span class="tab-count">8 / 24</span></button><button class="tab-button" data-slug="grade-8" role="tab" aria-selected="false"><span class="tab-name">Grade 8</span><span class="tab-count">5 / 10</span></button></nav>
+    </div>
+    <div class="rail-foot">
+      <p class="stamp">Updated Sep 3, 2026 7:42 PM</p>
       
-      <div class="team">
-        <div class="team-row">
-          <span class="team-label">3 Gold</span>
-          <span class="team-count">5 / 8</span>
-        </div>
-        <div class="bar"><div class="bar-fill" style="width:62%"></div></div>
-      </div>
-    </section>
-    <section class="grade-block">
-      <h2>Grade 4</h2>
-      
-      <div class="team">
-        <div class="team-row">
-          <span class="team-label">4 Gold</span>
-          <span class="team-count">6 / 9</span>
-        </div>
-        <div class="bar"><div class="bar-fill" style="width:67%"></div></div>
-      </div>
-      <div class="team">
-        <div class="team-row">
-          <span class="team-label">4 Red</span>
-          <span class="team-count">5 / 9</span>
-        </div>
-        <div class="bar"><div class="bar-fill" style="width:56%"></div></div>
-      </div>
-    </section>
-    <section class="grade-block">
-      <h2>Grade 5</h2>
-      
-      <div class="team">
-        <div class="team-row">
-          <span class="team-label">5 Gold</span>
-          <span class="team-count">3 / 8</span>
-        </div>
-        <div class="bar"><div class="bar-fill" style="width:38%"></div></div>
-      </div>
-      <div class="team">
-        <div class="team-row">
-          <span class="team-label">5 Red</span>
-          <span class="team-count">0 / 8</span>
-        </div>
-        <div class="bar"><div class="bar-fill" style="width:0%"></div></div>
-      </div>
-    </section>
-    <section class="grade-block">
-      <h2>Grade 6</h2>
-      
-      <div class="team">
-        <div class="team-row">
-          <span class="team-label">6 Gold</span>
-          <span class="team-count">3 / 8</span>
-        </div>
-        <div class="bar"><div class="bar-fill" style="width:38%"></div></div>
-      </div>
-      <div class="team">
-        <div class="team-row">
-          <span class="team-label">6 Red</span>
-          <span class="team-count">3 / 8</span>
-        </div>
-        <div class="bar"><div class="bar-fill" style="width:38%"></div></div>
-      </div>
-      <div class="team">
-        <div class="team-row">
-          <span class="team-label">6 White</span>
-          <span class="team-count">2 / 8</span>
-        </div>
-        <div class="bar"><div class="bar-fill" style="width:25%"></div></div>
-      </div>
-    </section>
-    <section class="grade-block">
-      <h2>Grade 8</h2>
-      
-      <div class="team">
-        <div class="team-row">
-          <span class="team-label">8 Gold</span>
-          <span class="team-count">5 / 10</span>
-        </div>
-        <div class="bar"><div class="bar-fill" style="width:50%"></div></div>
-      </div>
-    </section>
-
-</main>
-<footer>Updated Sep 3, 2026 7:18 PM</footer>
+    </div>
+  </aside>
+  <main class="main"><section class="tab-panel is-active" id="panel-overview"><h1>Overview</h1><div class="board-cell"><p class="board-label">Registered / Rostered</p><p class="board-value">32 / 76<span class="pct">42%</span></p></div><section class="card wide"><h3>All teams</h3><div class="vchart"><div class="vcol" title="3 Gold: 5 of 8 registered"><span class="vnum">5 / 8</span><span class="vtrack"><span class="vfill" style="height:62%"></span></span><span class="vlabel">3 Gold</span></div><div class="vcol" title="4 Gold: 6 of 9 registered"><span class="vnum">6 / 9</span><span class="vtrack"><span class="vfill" style="height:67%"></span></span><span class="vlabel">4 Gold</span></div><div class="vcol" title="4 Red: 5 of 9 registered"><span class="vnum">5 / 9</span><span class="vtrack"><span class="vfill" style="height:56%"></span></span><span class="vlabel">4 Red</span></div><div class="vcol" title="5 Gold: 3 of 8 registered"><span class="vnum">3 / 8</span><span class="vtrack"><span class="vfill" style="height:38%"></span></span><span class="vlabel">5 Gold</span></div><div class="vcol" title="5 Red: 0 of 8 registered"><span class="vnum">0 / 8</span><span class="vtrack"><span class="vfill" style="height:0%"></span></span><span class="vlabel">5 Red</span></div><div class="vcol" title="6 Gold: 3 of 8 registered"><span class="vnum">3 / 8</span><span class="vtrack"><span class="vfill" style="height:38%"></span></span><span class="vlabel">6 Gold</span></div><div class="vcol" title="6 Red: 3 of 8 registered"><span class="vnum">3 / 8</span><span class="vtrack"><span class="vfill" style="height:38%"></span></span><span class="vlabel">6 Red</span></div><div class="vcol" title="6 White: 2 of 8 registered"><span class="vnum">2 / 8</span><span class="vtrack"><span class="vfill" style="height:25%"></span></span><span class="vlabel">6 White</span></div><div class="vcol" title="8 Gold: 5 of 10 registered"><span class="vnum">5 / 10</span><span class="vtrack"><span class="vfill" style="height:50%"></span></span><span class="vlabel">8 Gold</span></div></div></section></section><section class="tab-panel" id="panel-grade-3"><h1>Grade 3</h1><section class="card wide"><h3>Registered by team</h3><div class="vchart"><div class="vcol" title="3 Gold: 5 of 8 registered"><span class="vnum">5 / 8</span><span class="vtrack"><span class="vfill" style="height:62%"></span></span><span class="vlabel">3 Gold</span></div></div></section></section><section class="tab-panel" id="panel-grade-4"><h1>Grade 4</h1><section class="card wide"><h3>Registered by team</h3><div class="vchart"><div class="vcol" title="4 Gold: 6 of 9 registered"><span class="vnum">6 / 9</span><span class="vtrack"><span class="vfill" style="height:67%"></span></span><span class="vlabel">4 Gold</span></div><div class="vcol" title="4 Red: 5 of 9 registered"><span class="vnum">5 / 9</span><span class="vtrack"><span class="vfill" style="height:56%"></span></span><span class="vlabel">4 Red</span></div></div></section></section><section class="tab-panel" id="panel-grade-5"><h1>Grade 5</h1><section class="card wide"><h3>Registered by team</h3><div class="vchart"><div class="vcol" title="5 Gold: 3 of 8 registered"><span class="vnum">3 / 8</span><span class="vtrack"><span class="vfill" style="height:38%"></span></span><span class="vlabel">5 Gold</span></div><div class="vcol" title="5 Red: 0 of 8 registered"><span class="vnum">0 / 8</span><span class="vtrack"><span class="vfill" style="height:0%"></span></span><span class="vlabel">5 Red</span></div></div></section></section><section class="tab-panel" id="panel-grade-6"><h1>Grade 6</h1><section class="card wide"><h3>Registered by team</h3><div class="vchart"><div class="vcol" title="6 Gold: 3 of 8 registered"><span class="vnum">3 / 8</span><span class="vtrack"><span class="vfill" style="height:38%"></span></span><span class="vlabel">6 Gold</span></div><div class="vcol" title="6 Red: 3 of 8 registered"><span class="vnum">3 / 8</span><span class="vtrack"><span class="vfill" style="height:38%"></span></span><span class="vlabel">6 Red</span></div><div class="vcol" title="6 White: 2 of 8 registered"><span class="vnum">2 / 8</span><span class="vtrack"><span class="vfill" style="height:25%"></span></span><span class="vlabel">6 White</span></div></div></section></section><section class="tab-panel" id="panel-grade-8"><h1>Grade 8</h1><section class="card wide"><h3>Registered by team</h3><div class="vchart"><div class="vcol" title="8 Gold: 5 of 10 registered"><span class="vnum">5 / 10</span><span class="vtrack"><span class="vfill" style="height:50%"></span></span><span class="vlabel">8 Gold</span></div></div></section></section></main>
+</div>
+<script>
+document.querySelectorAll('.tab-button').forEach(function(button){
+  button.addEventListener('click', function(){
+    document.querySelectorAll('.tab-button').forEach(function(other){
+      other.classList.remove('is-active');
+      other.setAttribute('aria-selected','false');
+    });
+    document.querySelectorAll('.tab-panel').forEach(function(panel){
+      panel.classList.remove('is-active');
+    });
+    button.classList.add('is-active');
+    button.setAttribute('aria-selected','true');
+    document.getElementById('panel-' + button.dataset.slug).classList.add('is-active');
+  });
+});
+</script>
 </body>
 </html>

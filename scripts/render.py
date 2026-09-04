@@ -1,27 +1,125 @@
-"""Render the team-registration breakdown as one static HTML page.
+"""Render the team-registration breakdown with the sibling dashboard's shell:
+a left rail of tabs and a vertical bar chart per tab's content, copied
+structurally from lsgba-registrations-dashboard's scripts/render.py (the
+`.shell`/`.rail`/`.tab-button` markup+CSS+JS, and the `_columns()` plain-HTML
+bar chart) -- same CSS classes, same tab-switching script, same bar-chart
+shape. The rail's tabs are grades instead of registrations (this project
+tracks one registration, not several), and an "Overview" tab carries the
+big scoreboard number the sibling puts on every tab.
 
-Palette and design tokens are copied directly from the sibling
-lsgba-registrations-dashboard project's scripts/render.py (same badge-sampled
-colors, same "gold is the only quantity/fill color" rule -- that project
-reserves green/red exclusively for one specific up/down chart, the
-grade-cohort flow diagram, and explicitly treats gold as the neutral
-"quantity" color everywhere else; there is no equivalent "up/down" concept
-on this page, so gold is used throughout instead). This is a single page,
-not a tabbed dashboard -- there is exactly one thing to show: current
-registered-vs-rostered counts, by team.
+Palette is the same badge-sampled set as the sibling project. Green/red are
+never used here, matching that project's rule that they are reserved for its
+one specific up/down chart (the grade-cohort flow diagram) -- gold is the
+palette's neutral "quantity/fill" color everywhere else, including here.
 """
 
-MAROON = "#8B1D41"
-MAROON_DEEP = "#5E1230"
-GOLD = "#D2B77C"
-GOLD_DIM = "#8A7647"
-# Sibling project's CREAM (#E8D8B8) as rgba(232, 216, 184, ...) -- used inline
-# below for translucent labels/track fills rather than as a solid color.
-GROUND = "#16171A"
-SURFACE = "#1F2126"
-EDGE = "#31363E"
-TEXT = "#ECEDEF"
-TEXT_DIM = "#8E959F"
+STYLE = """
+:root{
+  --maroon:#8B1D41; --maroon-deep:#5E1230;
+  --gold:#D2B77C; --gold-dim:#8A7647;
+  --ground:#16171A; --surface:#1F2126; --surface-2:#262A30; --edge:#31363E;
+  --text:#ECEDEF; --dim:#8E959F;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body{margin:0;background:var(--ground);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+
+.shell{display:flex;min-height:100vh;align-items:stretch}
+
+/* ---- left rail (copied structurally from the sibling dashboard) ---- */
+.rail{flex:0 0 268px;background:var(--surface);border-right:1px solid var(--edge);
+  padding:26px 20px;display:flex;flex-direction:column;gap:26px}
+.brand{display:flex;align-items:center;gap:13px}
+.brand img{width:54px;height:54px;flex:0 0 54px}
+.brand-org{margin:0;font-size:.95rem;font-weight:800;letter-spacing:.02em;
+  line-height:1.15}
+.brand-sub{margin:2px 0 0;font-size:.72rem;color:var(--dim);letter-spacing:.13em;
+  text-transform:uppercase}
+.rail-label{margin:0 0 10px;font-size:.66rem;letter-spacing:.19em;
+  text-transform:uppercase;color:var(--dim);font-weight:700}
+.tabs{display:flex;flex-direction:column;gap:6px}
+.tab-button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:transparent;border:1px solid transparent;border-radius:11px;
+  padding:11px 13px;color:var(--dim);font-family:inherit;font-size:.83rem;
+  font-weight:600;cursor:pointer;transition:background .15s,color .15s}
+.tab-button:hover{background:var(--surface-2);color:var(--text)}
+.tab-button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.tab-button.is-active{background:var(--maroon);border-color:rgba(210,183,124,.5);
+  color:#fff}
+.tab-name{flex:1;line-height:1.3}
+.tab-count{font-size:.9rem;font-weight:700;color:var(--gold);
+  font-variant-numeric:tabular-nums}
+.rail-foot{margin-top:auto}
+.stamp{margin:0;font-size:.78rem;color:var(--text)}
+.unmatched-note{margin:8px 0 0;font-size:.72rem;color:var(--dim)}
+
+/* ---- main / tab panels ---- */
+.main{flex:1;min-width:0;padding:30px 34px 56px}
+.tab-panel{display:none}
+.tab-panel.is-active{display:block}
+.main h1{margin:0 0 18px;font-size:1.3rem;font-weight:700}
+
+/* ---- scoreboard cell (Overview tab) ---- */
+.board-cell{background:linear-gradient(135deg,var(--maroon),var(--maroon-deep));
+  border:1px solid rgba(210,183,124,.28);border-radius:16px;
+  padding:22px 26px;margin-bottom:16px}
+.board-label{margin:0;font-size:.7rem;letter-spacing:.19em;text-transform:uppercase;
+  color:rgba(232,216,184,.75)}
+.board-value{margin:6px 0 0;font-size:2.6rem;font-weight:700;color:var(--gold);
+  font-variant-numeric:tabular-nums;font-family:var(--mono)}
+.board-value .pct{font-size:1.1rem;color:rgba(232,216,184,.75);margin-left:10px}
+
+/* ---- card ---- */
+.card{background:var(--surface);border:1px solid var(--edge);border-radius:16px;
+  padding:19px 22px;margin-top:16px}
+.card h3{margin:0 0 15px;font-size:.66rem;letter-spacing:.19em;
+  text-transform:uppercase;color:var(--dim);font-weight:700}
+.card.wide{grid-column:1/-1}
+
+/* ---- vertical bars (copied from the sibling's _columns()/.vchart) ---- */
+.vchart{display:flex;align-items:flex-end;justify-content:center;
+  gap:clamp(6px,2.4vw,26px);padding-top:4px}
+.vcol{flex:1 1 0;max-width:110px;min-width:44px;display:flex;
+  flex-direction:column;align-items:center;gap:7px}
+.vnum{font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-size:.95rem;font-weight:700;color:var(--gold);line-height:1}
+.vtrack{width:100%;height:clamp(90px,16vw,150px);display:flex;
+  align-items:flex-end;border-bottom:1px solid var(--edge)}
+.vfill{width:100%;border-radius:6px 6px 0 0;min-height:3px;
+  background:linear-gradient(180deg,var(--gold),var(--gold-dim))}
+.vlabel{font-size:.78rem;color:var(--text);white-space:nowrap}
+
+footer.credit{text-align:center;color:var(--dim);font-size:.75rem;padding:18px}
+
+@media (max-width:860px){
+  .shell{flex-direction:column}
+  .rail{flex:0 0 auto;border-right:0;border-bottom:1px solid var(--edge);
+    padding:18px 16px;gap:16px}
+  .rail-foot{margin-top:0}
+  .tabs{flex-direction:row;flex-wrap:wrap;gap:8px}
+  .tab-button{flex:1 1 auto;border-radius:999px;padding:9px 15px}
+  .tab-name{flex:1 1 auto}
+  .main{padding:20px 16px 44px}
+}
+"""
+
+SCRIPT = """
+document.querySelectorAll('.tab-button').forEach(function(button){
+  button.addEventListener('click', function(){
+    document.querySelectorAll('.tab-button').forEach(function(other){
+      other.classList.remove('is-active');
+      other.setAttribute('aria-selected','false');
+    });
+    document.querySelectorAll('.tab-panel').forEach(function(panel){
+      panel.classList.remove('is-active');
+    });
+    button.classList.add('is-active');
+    button.setAttribute('aria-selected','true');
+    document.getElementById('panel-' + button.dataset.slug).classList.add('is-active');
+  });
+});
+"""
 
 
 def escape(text):
@@ -30,26 +128,56 @@ def escape(text):
             .replace('"', "&quot;"))
 
 
-def _team_card(label, team):
-    registered, size = team["registered"], team["size"]
-    pct = 0 if size == 0 else min(100, round(100 * registered / size))
-    return """
-      <div class="team">
-        <div class="team-row">
-          <span class="team-label">%s</span>
-          <span class="team-count">%d / %d</span>
-        </div>
-        <div class="bar"><div class="bar-fill" style="width:%d%%"></div></div>
-      </div>""" % (escape(label), registered, size, pct)
+def _vchart(pairs):
+    """One vertical bar per (label, registered, size) triple.
+
+    Bar height is that bar's OWN percent-of-roster-filled, not (as the
+    sibling's plain _columns() does) a percentage of the tallest bar in the
+    set -- "how full is this team" is the question this page answers, and a
+    shared-max scale would make a small team's full roster look shorter than
+    a big team's half-full one.
+    """
+    if not pairs:
+        return '<p class="empty">No teams.</p>'
+    cols = []
+    for label, registered, size in pairs:
+        pct = 0 if size == 0 else min(100, round(100 * registered / size))
+        cols.append(
+            '<div class="vcol" title="%s: %d of %d registered">'
+            '<span class="vnum">%d / %d</span>'
+            '<span class="vtrack"><span class="vfill" style="height:%d%%"></span></span>'
+            '<span class="vlabel">%s</span>'
+            '</div>' % (escape(label), registered, size, registered, size, pct, escape(label)))
+    return '<div class="vchart">%s</div>' % "".join(cols)
 
 
-def _grade_section(grade, teams_in_grade):
-    cards = "".join(_team_card(label, team) for label, team in teams_in_grade)
-    return """
-    <section class="grade-block">
-      <h2>Grade %s</h2>
-      %s
-    </section>""" % (escape(grade), cards)
+def _tab_button(name, count_text, slug, active):
+    return (
+        '<button class="tab-button%s" data-slug="%s" role="tab" aria-selected="%s">'
+        '<span class="tab-name">%s</span>'
+        '<span class="tab-count">%s</span>'
+        '</button>' % (" is-active" if active else "", slug,
+                       "true" if active else "false", escape(name), escape(count_text)))
+
+
+def _overview_panel(slug, active, total, roster_total, pct, team_bars):
+    return (
+        '<section class="tab-panel%s" id="panel-%s">'
+        '<h1>Overview</h1>'
+        '<div class="board-cell">'
+        '<p class="board-label">Registered / Rostered</p>'
+        '<p class="board-value">%d / %d<span class="pct">%d%%</span></p>'
+        '</div>'
+        '<section class="card wide"><h3>All teams</h3>%s</section>'
+        '</section>' % (" is-active" if active else "", slug, total, roster_total, pct, team_bars))
+
+
+def _grade_panel(grade, slug, active, team_bars):
+    return (
+        '<section class="tab-panel%s" id="panel-%s">'
+        '<h1>Grade %s</h1>'
+        '<section class="card wide"><h3>Registered by team</h3>%s</section>'
+        '</section>' % (" is-active" if active else "", slug, escape(grade), team_bars))
 
 
 def render_page(result, updated_stamp):
@@ -61,16 +189,36 @@ def render_page(result, updated_stamp):
 
     by_grade = {}
     for label, team in teams.items():
-        by_grade.setdefault(team["grade"], []).append((label, team))
-    grade_sections = "".join(
-        _grade_section(grade, sorted(by_grade[grade]))
-        for grade in sorted(by_grade)
-    )
+        by_grade.setdefault(team["grade"], []).append((label, team["registered"], team["size"]))
+    grades = sorted(by_grade)
+    for grade in grades:
+        by_grade[grade].sort()
+
+    all_teams_sorted = sorted(
+        ((label, t["registered"], t["size"]) for label, t in teams.items()))
+
+    slugs = ["overview"] + ["grade-%s" % grade for grade in grades]
+    names = ["Overview"] + ["Grade %s" % grade for grade in grades]
+    count_texts = ["%d / %d" % (total, roster_total)] + [
+        "%d / %d" % (sum(r for _, r, _ in by_grade[g]), sum(s for _, _, s in by_grade[g]))
+        for g in grades
+    ]
+
+    tab_buttons = "".join(
+        _tab_button(names[i], count_texts[i], slugs[i], i == 0)
+        for i in range(len(slugs)))
+
+    panels = _overview_panel("overview", True, total, roster_total, pct,
+                             _vchart(all_teams_sorted))
+    panels += "".join(
+        _grade_panel(grade, slugs[i + 1], False, _vchart(by_grade[grade]))
+        for i, grade in enumerate(grades))
 
     unmatched_html = ""
     if unmatched:
-        unmatched_html = """
-    <div class="unmatched">%d registration(s) could not be matched to a rostered team and are not counted above. Check the export against the roster.</div>""" % unmatched
+        unmatched_html = ('<p class="unmatched-note">%d registration(s) could not be '
+                          'matched to a rostered team and are not counted above.</p>'
+                          % unmatched)
 
     return """<!DOCTYPE html>
 <html lang="en">
@@ -79,64 +227,30 @@ def render_page(result, updated_stamp):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LSGBA Team Registration</title>
 <link rel="icon" href="assets/favicon.png">
-<style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; background: %(ground)s; color: %(text)s;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-  header {
-    padding: 32px 24px; text-align: center;
-    background: linear-gradient(135deg, %(maroon)s, %(maroon_deep)s);
-  }
-  header img { height: 64px; margin-bottom: 12px; }
-  header h1 { margin: 0; font-size: 1.4rem; font-weight: 600; color: %(text)s; }
-  .headline-label {
-    margin-top: 18px; font-size: 0.72rem; text-transform: uppercase;
-    letter-spacing: 0.19em; color: rgba(232, 216, 184, 0.75);
-  }
-  .headline {
-    font-size: 2.6rem; font-weight: 700; margin: 4px 0 0; color: %(gold)s;
-    font-variant-numeric: tabular-nums;
-  }
-  .headline .pct { font-size: 1.1rem; color: rgba(232, 216, 184, 0.75); margin-left: 8px; }
-  main { max-width: 900px; margin: 0 auto; padding: 24px; }
-  .grade-block { margin-bottom: 28px; }
-  .grade-block h2 {
-    font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.19em;
-    color: %(text_dim)s; border-bottom: 1px solid %(edge)s; padding-bottom: 6px;
-  }
-  .team { background: %(surface)s; border: 1px solid %(edge)s; border-radius: 16px;
-          padding: 14px 16px; margin-top: 10px; }
-  .team-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-  .team-label { font-weight: 600; color: %(text)s; }
-  .team-count { color: %(gold)s; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .bar { height: 8px; border-radius: 4px; background: rgba(232, 216, 184, 0.07); overflow: hidden; }
-  .bar-fill { height: 100%%; background: linear-gradient(90deg, %(gold_dim)s, %(gold)s); }
-  .unmatched { margin-top: 8px; padding: 14px 16px; border-radius: 16px;
-               background: %(surface)s; border: 1px solid %(edge)s; color: %(text_dim)s; }
-  footer { text-align: center; color: %(text_dim)s; font-size: 0.85rem; padding: 24px; }
-</style>
+<style>%s</style>
 </head>
 <body>
-<header>
-  <img src="assets/lsgba-badge-solid.png" alt="LSGBA">
-  <h1>2026-2027 Travel Roster Registration</h1>
-  <div class="headline-label">Registered / Rostered</div>
-  <div class="headline">%(total)d / %(roster_total)d<span class="pct">%(pct)d%%</span></div>
-</header>
-<main>
-%(grade_sections)s
-%(unmatched)s
-</main>
-<footer>Updated %(updated)s</footer>
+<div class="shell">
+  <aside class="rail">
+    <div class="brand">
+      <img src="assets/lsgba-badge-solid.png" alt="LSGBA">
+      <div>
+        <p class="brand-org">LSGBA</p>
+        <p class="brand-sub">Team Registration</p>
+      </div>
+    </div>
+    <div>
+      <p class="rail-label">Grades</p>
+      <nav class="tabs" role="tablist">%s</nav>
+    </div>
+    <div class="rail-foot">
+      <p class="stamp">Updated %s</p>
+      %s
+    </div>
+  </aside>
+  <main class="main">%s</main>
+</div>
+<script>%s</script>
 </body>
 </html>
-""" % {
-        "ground": GROUND, "maroon": MAROON, "maroon_deep": MAROON_DEEP,
-        "gold": GOLD, "gold_dim": GOLD_DIM, "text": TEXT, "text_dim": TEXT_DIM,
-        "surface": SURFACE, "edge": EDGE,
-        "total": total, "roster_total": roster_total, "pct": pct,
-        "grade_sections": grade_sections, "unmatched": unmatched_html,
-        "updated": escape(updated_stamp),
-    }
+""" % (STYLE, tab_buttons, escape(updated_stamp), unmatched_html, panels, SCRIPT)
