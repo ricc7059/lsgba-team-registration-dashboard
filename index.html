@@ -16,23 +16,30 @@
     background: linear-gradient(135deg, #8B1D41, #5E1230);
   }
   header img { height: 64px; margin-bottom: 12px; }
-  header h1 { margin: 0; font-size: 1.4rem; font-weight: 600; }
-  .headline { font-size: 3rem; font-weight: 700; margin: 12px 0 4px; }
-  .headline .pct { font-size: 1.2rem; color: #D2B77C; margin-left: 8px; }
+  header h1 { margin: 0; font-size: 1.4rem; font-weight: 600; color: #ECEDEF; }
+  .headline-label {
+    margin-top: 18px; font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.19em; color: rgba(232, 216, 184, 0.75);
+  }
+  .headline {
+    font-size: 2.6rem; font-weight: 700; margin: 4px 0 0; color: #D2B77C;
+    font-variant-numeric: tabular-nums;
+  }
+  .headline .pct { font-size: 1.1rem; color: rgba(232, 216, 184, 0.75); margin-left: 8px; }
   main { max-width: 900px; margin: 0 auto; padding: 24px; }
   .grade-block { margin-bottom: 28px; }
   .grade-block h2 {
-    font-size: 1rem; text-transform: uppercase; letter-spacing: 0.06em;
+    font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.19em;
     color: #8E959F; border-bottom: 1px solid #31363E; padding-bottom: 6px;
   }
-  .team { background: #1F2126; border: 1px solid #31363E; border-radius: 10px;
+  .team { background: #1F2126; border: 1px solid #31363E; border-radius: 16px;
           padding: 14px 16px; margin-top: 10px; }
   .team-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-  .team-label { font-weight: 600; }
-  .team-count { color: #8E959F; font-variant-numeric: tabular-nums; }
-  .bar { height: 8px; border-radius: 4px; background: #262A30; overflow: hidden; }
-  .bar-fill { height: 100%; background: #46AD69; }
-  .unmatched { margin-top: 8px; padding: 14px 16px; border-radius: 10px;
+  .team-label { font-weight: 600; color: #ECEDEF; }
+  .team-count { color: #D2B77C; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .bar { height: 8px; border-radius: 4px; background: rgba(232, 216, 184, 0.07); overflow: hidden; }
+  .bar-fill { height: 100%; background: linear-gradient(90deg, #8A7647, #D2B77C); }
+  .unmatched { margin-top: 8px; padding: 14px 16px; border-radius: 16px;
                background: #1F2126; border: 1px solid #31363E; color: #8E959F; }
   footer { text-align: center; color: #8E959F; font-size: 0.85rem; padding: 24px; }
 </style>
@@ -41,6 +48,7 @@
 <header>
   <img src="assets/lsgba-badge-solid.png" alt="LSGBA">
   <h1>2026-2027 Travel Roster Registration</h1>
+  <div class="headline-label">Registered / Rostered</div>
   <div class="headline">32 / 76<span class="pct">42%</span></div>
 </header>
 <main>
@@ -130,6 +138,6 @@
     </section>
 
 </main>
-<footer>Updated Sep 3, 2026 7:06 PM</footer>
+<footer>Updated Sep 3, 2026 7:18 PM</footer>
 </body>
 </html>

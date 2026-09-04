@@ -1,21 +1,27 @@
 """Render the team-registration breakdown as one static HTML page.
 
-Palette matches the sibling lsgba-registrations-dashboard project (sampled
-from the association's badge) for visual continuity, but this is a single
-page, not a tabbed dashboard -- there is exactly one thing to show: current
+Palette and design tokens are copied directly from the sibling
+lsgba-registrations-dashboard project's scripts/render.py (same badge-sampled
+colors, same "gold is the only quantity/fill color" rule -- that project
+reserves green/red exclusively for one specific up/down chart, the
+grade-cohort flow diagram, and explicitly treats gold as the neutral
+"quantity" color everywhere else; there is no equivalent "up/down" concept
+on this page, so gold is used throughout instead). This is a single page,
+not a tabbed dashboard -- there is exactly one thing to show: current
 registered-vs-rostered counts, by team.
 """
 
 MAROON = "#8B1D41"
 MAROON_DEEP = "#5E1230"
 GOLD = "#D2B77C"
+GOLD_DIM = "#8A7647"
+# Sibling project's CREAM (#E8D8B8) as rgba(232, 216, 184, ...) -- used inline
+# below for translucent labels/track fills rather than as a solid color.
 GROUND = "#16171A"
 SURFACE = "#1F2126"
-SURFACE_2 = "#262A30"
 EDGE = "#31363E"
 TEXT = "#ECEDEF"
 TEXT_DIM = "#8E959F"
-GOOD = "#46AD69"
 
 
 def escape(text):
@@ -84,23 +90,30 @@ def render_page(result, updated_stamp):
     background: linear-gradient(135deg, %(maroon)s, %(maroon_deep)s);
   }
   header img { height: 64px; margin-bottom: 12px; }
-  header h1 { margin: 0; font-size: 1.4rem; font-weight: 600; }
-  .headline { font-size: 3rem; font-weight: 700; margin: 12px 0 4px; }
-  .headline .pct { font-size: 1.2rem; color: %(gold)s; margin-left: 8px; }
+  header h1 { margin: 0; font-size: 1.4rem; font-weight: 600; color: %(text)s; }
+  .headline-label {
+    margin-top: 18px; font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.19em; color: rgba(232, 216, 184, 0.75);
+  }
+  .headline {
+    font-size: 2.6rem; font-weight: 700; margin: 4px 0 0; color: %(gold)s;
+    font-variant-numeric: tabular-nums;
+  }
+  .headline .pct { font-size: 1.1rem; color: rgba(232, 216, 184, 0.75); margin-left: 8px; }
   main { max-width: 900px; margin: 0 auto; padding: 24px; }
   .grade-block { margin-bottom: 28px; }
   .grade-block h2 {
-    font-size: 1rem; text-transform: uppercase; letter-spacing: 0.06em;
+    font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.19em;
     color: %(text_dim)s; border-bottom: 1px solid %(edge)s; padding-bottom: 6px;
   }
-  .team { background: %(surface)s; border: 1px solid %(edge)s; border-radius: 10px;
+  .team { background: %(surface)s; border: 1px solid %(edge)s; border-radius: 16px;
           padding: 14px 16px; margin-top: 10px; }
   .team-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-  .team-label { font-weight: 600; }
-  .team-count { color: %(text_dim)s; font-variant-numeric: tabular-nums; }
-  .bar { height: 8px; border-radius: 4px; background: %(surface_2)s; overflow: hidden; }
-  .bar-fill { height: 100%%; background: %(good)s; }
-  .unmatched { margin-top: 8px; padding: 14px 16px; border-radius: 10px;
+  .team-label { font-weight: 600; color: %(text)s; }
+  .team-count { color: %(gold)s; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .bar { height: 8px; border-radius: 4px; background: rgba(232, 216, 184, 0.07); overflow: hidden; }
+  .bar-fill { height: 100%%; background: linear-gradient(90deg, %(gold_dim)s, %(gold)s); }
+  .unmatched { margin-top: 8px; padding: 14px 16px; border-radius: 16px;
                background: %(surface)s; border: 1px solid %(edge)s; color: %(text_dim)s; }
   footer { text-align: center; color: %(text_dim)s; font-size: 0.85rem; padding: 24px; }
 </style>
@@ -109,6 +122,7 @@ def render_page(result, updated_stamp):
 <header>
   <img src="assets/lsgba-badge-solid.png" alt="LSGBA">
   <h1>2026-2027 Travel Roster Registration</h1>
+  <div class="headline-label">Registered / Rostered</div>
   <div class="headline">%(total)d / %(roster_total)d<span class="pct">%(pct)d%%</span></div>
 </header>
 <main>
@@ -120,8 +134,8 @@ def render_page(result, updated_stamp):
 </html>
 """ % {
         "ground": GROUND, "maroon": MAROON, "maroon_deep": MAROON_DEEP,
-        "gold": GOLD, "text": TEXT, "text_dim": TEXT_DIM, "surface": SURFACE,
-        "surface_2": SURFACE_2, "edge": EDGE, "good": GOOD,
+        "gold": GOLD, "gold_dim": GOLD_DIM, "text": TEXT, "text_dim": TEXT_DIM,
+        "surface": SURFACE, "edge": EDGE,
         "total": total, "roster_total": roster_total, "pct": pct,
         "grade_sections": grade_sections, "unmatched": unmatched_html,
         "updated": escape(updated_stamp),
