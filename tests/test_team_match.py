@@ -37,18 +37,39 @@ class MatchRegistrantTests(unittest.TestCase):
     def test_is_case_insensitive(self):
         self.assertEqual(team_match.match_registrant("ADA", "FAKE", 3, ROSTER), "3 Gold")
 
-    def test_wrong_grade_does_not_match(self):
-        self.assertIsNone(team_match.match_registrant("Ada", "Fake", 4, ROSTER))
+    def test_wrong_grade_falls_back_to_full_name_match(self):
+        # The exact bug seen live: a registrant's stated grade disagrees with
+        # the roster's, but their full name is an unambiguous exact match.
+        self.assertEqual(team_match.match_registrant("Ada", "Fake", 4, ROSTER), "3 Gold")
+
+    def test_full_name_fallback_is_case_insensitive(self):
+        self.assertEqual(team_match.match_registrant("ADA", "FAKE", 4, ROSTER), "3 Gold")
 
     def test_no_last_name_match_is_unmatched(self):
         self.assertIsNone(team_match.match_registrant("Zed", "Nobody", 3, ROSTER))
 
-    def test_same_last_name_and_initial_on_two_teams_is_ambiguous(self):
-        # Two different teams, same grade, each with a "C. Fake" -- the rule
-        # can't tell which team the registrant belongs to, so neither wins.
+    def test_wrong_grade_with_no_full_name_match_anywhere_is_unmatched(self):
+        self.assertIsNone(team_match.match_registrant("Zed", "Nobody", 4, ROSTER))
+
+    def test_grade_none_still_falls_back_to_full_name_match(self):
+        self.assertEqual(team_match.match_registrant("Ada", "Fake", None, ROSTER), "3 Gold")
+
+    def test_same_last_name_and_initial_on_two_teams_disambiguates_by_full_name(self):
+        # Grade-scoped rule alone can't tell "Cy Fake" from "Cole Fake" apart
+        # (same last name, same first initial) -- the full-name fallback
+        # resolves it because the two full names actually differ.
         roster = {
             "4 Gold": {"grade": 4, "members": [("Cy", "Fake")]},
             "4 Red": {"grade": 4, "members": [("Cole", "Fake")]},
+        }
+        self.assertEqual(team_match.match_registrant("Cy", "Fake", 4, roster), "4 Gold")
+
+    def test_identical_full_name_on_two_teams_is_still_ambiguous(self):
+        # A genuine data problem (e.g. two same-named kids on different
+        # teams) has no rule left to disambiguate it -- neither wins.
+        roster = {
+            "4 Gold": {"grade": 4, "members": [("Cy", "Fake")]},
+            "4 Red": {"grade": 4, "members": [("Cy", "Fake")]},
         }
         self.assertIsNone(team_match.match_registrant("Cy", "Fake", 4, roster))
 

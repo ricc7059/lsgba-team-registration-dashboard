@@ -47,9 +47,16 @@ no "team" field).
    would drift). For each registrant: within roster members at the same
    grade, match on **full last name (case-insensitive) + first-name initial
    (case-insensitive)**. Exactly one matching team → assign. Zero, or more
-   than one *distinct team* matching → counted in an `unmatched` bucket.
-   **The only thing that leaves `team_match.match_export()` is counts** — no
-   name, DOB, or contact field is returned, logged, or persisted anywhere.
+   than one *distinct team* matching → fall back to a **second phase**: full
+   name (first + last, lowercased) matched anywhere on the roster,
+   regardless of grade. This phase 2 was added 2026-09-03 after the first
+   live run found 7/32 registrants unmatched purely because the survey's
+   grade answer was one grade off from the roster's — the registrant's full
+   name matched exactly once, just not at the grade they'd stated. Only when
+   *both* phases fail to resolve to exactly one team does a registrant land
+   in the `unmatched` bucket. **The only thing that leaves
+   `team_match.match_export()` is counts** — no name, DOB, or contact field
+   is returned, logged, or persisted anywhere.
 4. **Render** — `scripts/render.py` builds one static page: total registered
    vs. total rostered, then each team as a `registered / roster size` line
    grouped by grade, plus the unmatched count if nonzero. Reuses the sibling

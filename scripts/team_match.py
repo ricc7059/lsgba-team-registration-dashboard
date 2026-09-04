@@ -56,8 +56,8 @@ def normalize_grade(text):
     return int(match.group()) if match else None
 
 
-def match_registrant(first, last, grade, roster):
-    """Team label, or None if zero or more than one distinct team matches."""
+def _match_within_grade(first, last, grade, roster):
+    """Primary rule: same grade, exact last name, matching first initial."""
     matches = set()
     for label, team in roster.items():
         if team["grade"] != grade:
@@ -65,9 +65,41 @@ def match_registrant(first, last, grade, roster):
         for m_first, m_last in team["members"]:
             if (m_last.strip().lower() == (last or "").strip().lower()
                     and m_first.strip()[:1].lower() == (first or "").strip()[:1].lower()
-                    and m_first.strip() and first.strip()):
+                    and m_first.strip() and (first or "").strip()):
                 matches.add(label)
     return matches.pop() if len(matches) == 1 else None
+
+
+def _match_by_full_name(first, last, roster):
+    """Fallback rule: full name, lowercased, matched anywhere on the roster
+    regardless of grade. Only reached once the grade-gated rule has already
+    failed to resolve a registrant -- this exists for the case where the
+    survey's own grade answer disagrees with the roster (observed live: a
+    parent answering with the athlete's just-finished grade instead of the
+    grade their roster team plays at), not to loosen name matching itself."""
+    target = "%s %s" % ((first or "").strip().lower(), (last or "").strip().lower())
+    if not (first or "").strip() or not (last or "").strip():
+        return None
+    matches = set()
+    for label, team in roster.items():
+        for m_first, m_last in team["members"]:
+            if "%s %s" % (m_first.strip().lower(), m_last.strip().lower()) == target:
+                matches.add(label)
+    return matches.pop() if len(matches) == 1 else None
+
+
+def match_registrant(first, last, grade, roster):
+    """Team label, or None if neither rule resolves it to exactly one team.
+
+    Tries the grade-gated rule first; only when that fails (wrong/absent
+    grade, or an ambiguous grade-scoped result) does it fall back to a full
+    name comparison across every team. See module-level rule docstrings.
+    """
+    if grade is not None:
+        matched = _match_within_grade(first, last, grade, roster)
+        if matched is not None:
+            return matched
+    return _match_by_full_name(first, last, roster)
 
 
 def match_export(csv_path, roster):
@@ -83,7 +115,7 @@ def match_export(csv_path, roster):
     unmatched = 0
     for person in registrants:
         grade = normalize_grade(person["grade"])
-        label = match_registrant(person["first"], person["last"], grade, roster) if grade is not None else None
+        label = match_registrant(person["first"], person["last"], grade, roster)
         if label is None:
             unmatched += 1
         else:

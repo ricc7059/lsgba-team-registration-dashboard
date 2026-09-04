@@ -110,10 +110,17 @@ Tell the user:
 
 - Never open an order, payment, or discount page. This skill does not report
   financials.
-- The matching rule is deliberately narrow: same grade, exact last name
-  (case-insensitive), matching first-name initial (case-insensitive). It is
-  not fuzzy/typo-tolerant. A registrant it can't uniquely resolve lands in
-  the Unmatched count, not a guess.
+- The matching rule has two phases, and phase 2 only ever runs after phase 1
+  has already failed to resolve a registrant to exactly one team:
+  1. Same grade, exact last name, matching first-name initial (all
+     case-insensitive).
+  2. Full name (first + last, lowercased) matched anywhere on the roster,
+     regardless of grade. This exists because the survey's grade answer and
+     the roster's grade can disagree (seen live: a parent answering with the
+     athlete's just-finished grade instead of the grade their roster team
+     plays at) — a case phase 1 alone would always miss.
+  Neither phase is fuzzy/typo-tolerant. A registrant neither phase can
+  uniquely resolve lands in the Unmatched count, not a guess.
 - The roster PDF changes every season and is never committed (like the
   sibling project's frozen roster in `history.py`) — it is re-read fresh
   from Downloads on every build.
