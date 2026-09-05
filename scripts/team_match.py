@@ -56,6 +56,18 @@ def normalize_grade(text):
     return int(match.group()) if match else None
 
 
+def normalize_name(text):
+    """Lowercase, hyphens to spaces, runs of whitespace collapsed.
+
+    Punctuation only: this does not make matching fuzzy or typo-tolerant.
+    It exists because a hyphenated surname can be written inconsistently
+    between the two sources -- the roster PDF hyphenates it while the
+    survey's free-text answer separates it with a space -- and an exact
+    comparison reads those as two different people.
+    """
+    return " ".join((text or "").replace("-", " ").lower().split())
+
+
 def _match_within_grade(first, last, grade, roster):
     """Primary rule: same grade, exact last name, matching first initial."""
     matches = set()
@@ -63,7 +75,7 @@ def _match_within_grade(first, last, grade, roster):
         if team["grade"] != grade:
             continue
         for m_first, m_last in team["members"]:
-            if (m_last.strip().lower() == (last or "").strip().lower()
+            if (normalize_name(m_last) == normalize_name(last)
                     and m_first.strip()[:1].lower() == (first or "").strip()[:1].lower()
                     and m_first.strip() and (first or "").strip()):
                 matches.add(label)
@@ -77,13 +89,13 @@ def _match_by_full_name(first, last, roster):
     survey's own grade answer disagrees with the roster (observed live: a
     parent answering with the athlete's just-finished grade instead of the
     grade their roster team plays at), not to loosen name matching itself."""
-    target = "%s %s" % ((first or "").strip().lower(), (last or "").strip().lower())
+    target = "%s %s" % (normalize_name(first), normalize_name(last))
     if not (first or "").strip() or not (last or "").strip():
         return None
     matches = set()
     for label, team in roster.items():
         for m_first, m_last in team["members"]:
-            if "%s %s" % (m_first.strip().lower(), m_last.strip().lower()) == target:
+            if "%s %s" % (normalize_name(m_first), normalize_name(m_last)) == target:
                 matches.add(label)
     return matches.pop() if len(matches) == 1 else None
 

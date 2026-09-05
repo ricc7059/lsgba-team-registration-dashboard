@@ -30,6 +30,44 @@ class NormalizeGradeTests(unittest.TestCase):
         self.assertIsNone(team_match.normalize_grade(""))
 
 
+class NormalizeNameTests(unittest.TestCase):
+    def test_hyphen_becomes_space(self):
+        self.assertEqual(team_match.normalize_name("Fake-Faketon"), "fake faketon")
+
+    def test_collapses_whitespace_and_lowercases(self):
+        self.assertEqual(team_match.normalize_name("  Fake   Faketon "), "fake faketon")
+
+    def test_handles_empty_and_none(self):
+        self.assertEqual(team_match.normalize_name(""), "")
+        self.assertEqual(team_match.normalize_name(None), "")
+
+    def test_does_not_make_matching_typo_tolerant(self):
+        # Punctuation only -- a genuine misspelling must still not match.
+        self.assertNotEqual(
+            team_match.normalize_name("Fakton"), team_match.normalize_name("Faketon"))
+
+
+class HyphenatedSurnameTests(unittest.TestCase):
+    """A surname hyphenated on the roster but space-separated in the survey
+    (or vice versa) is the same person, and must resolve to one team."""
+
+    ROSTER = {"8 Gold": {"grade": 8, "members": [("Ada", "Fake-Faketon")]}}
+
+    def test_space_separated_survey_name_matches_hyphenated_roster(self):
+        self.assertEqual(
+            team_match.match_registrant("Ada", "Fake Faketon", 8, self.ROSTER), "8 Gold")
+
+    def test_matches_via_full_name_fallback_when_grade_also_disagrees(self):
+        # Both discrepancies stacked: wrong grade AND inconsistent hyphenation.
+        self.assertEqual(
+            team_match.match_registrant("Ada", "Fake Faketon", 7, self.ROSTER), "8 Gold")
+
+    def test_hyphenated_survey_name_matches_space_separated_roster(self):
+        roster = {"8 Gold": {"grade": 8, "members": [("Ada", "Fake Faketon")]}}
+        self.assertEqual(
+            team_match.match_registrant("Ada", "Fake-Faketon", 8, roster), "8 Gold")
+
+
 class MatchRegistrantTests(unittest.TestCase):
     def test_matches_on_last_name_and_first_initial(self):
         self.assertEqual(team_match.match_registrant("Ada", "Fake", 3, ROSTER), "3 Gold")
