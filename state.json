@@ -1,13 +1,13 @@
 {
-  "lastRun": "2026-09-04T22:38:51-05:00",
+  "lastRun": "2026-09-05T11:18:47-05:00",
   "registrations": {
     "1132938": {
       "event": null,
-      "lastCount": 71,
-      "lastDelta": 3,
-      "lastExport": "lsgba-team-registration-2026-09-04-2237.csv",
+      "lastCount": 72,
+      "lastDelta": 1,
+      "lastExport": "lsgba-team-registration-2026-09-05-1118.csv",
       "name": "2026-2027 LSGBA Travel Roster Acceptance and Registration",
-      "previousCount": 68,
+      "previousCount": 71,
       "slug": "2026-2027-lsgba-travel-roster-acceptance-and-registration"
     }
   }
